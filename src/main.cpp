@@ -1,23 +1,29 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 #include "parser/tokenizer.h"
+#include "parser/parser.h"
 
 int main() {
     while (true) {
         std::cout << "myshell> ";
 
-        std::string s;
-        std::getline(std::cin, s);
+        std::string input;
+        std::getline(std::cin, input);
 
-        std::vector<std::string> tokens = tokenize(s);
+        std::vector<std::string> tokens = tokenize(input);
 
         if (tokens.empty()) {
             continue;
         }
 
-        for (const auto& token : tokens) {
-            std::cout << "Token: [" << token << "]\n";
+        Command command = parse(tokens);
+
+        std::cout << "Program: " << command.program << '\n';
+
+        for (const auto& arg : command.arguments) {
+            std::cout << "Argument: " << arg << '\n';
         }
     }
 }
