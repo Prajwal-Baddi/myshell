@@ -4,13 +4,17 @@
 
 #include "parser/tokenizer.h"
 #include "parser/parser.h"
+#include "builtins/builtins.h"
 
 int main() {
     while (true) {
         std::cout << "myshell> ";
 
         std::string input;
-        std::getline(std::cin, input);
+        if (!std::getline(std::cin, input)) {
+            std::cout << '\n';
+            break;
+        }
 
         std::vector<std::string> tokens = tokenize(input);
 
@@ -20,10 +24,12 @@ int main() {
 
         Command command = parse(tokens);
 
-        std::cout << "Program: " << command.program << '\n';
-
-        for (const auto& arg : command.arguments) {
-            std::cout << "Argument: " << arg << '\n';
+        if (isBuiltin(command)) {
+            if (!executeBuiltin(command)) {
+                std::cerr << "Error executing builtin command: " << command.program << '\n';
+            }
+        } else {
+            std::cerr << "Command not found: " << command.program << '\n';
         }
     }
 }
