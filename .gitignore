@@ -1,0 +1,16 @@
+# Compiled binaries
+myshell
+test
+main
+
+# Object files
+*.o
+
+# Debug/build files
+*.out
+
+# IDE
+.vscode/
+
+# OS files
+.DS_Store
