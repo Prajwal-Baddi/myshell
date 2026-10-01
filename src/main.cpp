@@ -5,6 +5,7 @@
 #include "parser/tokenizer.h"
 #include "parser/parser.h"
 #include "builtins/builtins.h"
+#include "executer/executer.h"
 
 int main() {
     while (true) {
@@ -28,8 +29,8 @@ int main() {
             if (!executeBuiltin(command)) {
                 std::cerr << "Error executing builtin command: " << command.program << '\n';
             }
-        } else {
-            std::cerr << "Command not found: " << command.program << '\n';
-        }
+      } else {
+    executeCommand(command);
+}
     }
 }
