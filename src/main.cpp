@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,13 @@ int main() {
             continue;
         }
 
-        Command command = parse(tokens);
+        Command command;
+        try {
+            command = parse(tokens);
+        } catch (const std::runtime_error& error) {
+            std::cerr << "Parse error: " << error.what() << '\n';
+            continue;
+        }
 
         if (isBuiltin(command)) {
             if (!executeBuiltin(command)) {
