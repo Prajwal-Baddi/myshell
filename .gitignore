@@ -9,6 +9,8 @@ main
 # Debug/build files
 *.out
 
+*.txt
+
 # IDE
 .vscode/
 
