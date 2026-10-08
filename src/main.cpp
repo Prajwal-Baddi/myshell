@@ -1,10 +1,12 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "parser/tokenizer.h"
 #include "parser/parser.h"
 #include "builtins/builtins.h"
+#include "executer/executer.h"
 
 int main() {
     while (true) {
@@ -22,14 +24,20 @@ int main() {
             continue;
         }
 
-        Command command = parse(tokens);
+        Command command;
+        try {
+            command = parse(tokens);
+        } catch (const std::runtime_error& error) {
+            std::cerr << "Parse error: " << error.what() << '\n';
+            continue;
+        }
 
         if (isBuiltin(command)) {
             if (!executeBuiltin(command)) {
                 std::cerr << "Error executing builtin command: " << command.program << '\n';
             }
-        } else {
-            std::cerr << "Command not found: " << command.program << '\n';
-        }
+      } else {
+    executeCommand(command);
+}
     }
 }
