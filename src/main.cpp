@@ -24,20 +24,23 @@ int main() {
             continue;
         }
 
-        Command command;
+        Pipeline pipeline;
         try {
-            command = parse(tokens);
+            pipeline = parse(tokens);
         } catch (const std::runtime_error& error) {
             std::cerr << "Parse error: " << error.what() << '\n';
             continue;
         }
 
-        if (isBuiltin(command)) {
-            if (!executeBuiltin(command)) {
-                std::cerr << "Error executing builtin command: " << command.program << '\n';
-            }
-      } else {
-    executeCommand(command);
+     const Command& command = pipeline.commands.front();
+
+if (pipeline.commands.size() == 1 && isBuiltin(command)) {
+    if (!executeBuiltin(command)) {
+        std::cerr << "Error executing builtin command: "
+                  << command.program << '\n';
+    }
+} else {
+    executePipeline(pipeline);
 }
     }
 }

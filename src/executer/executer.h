@@ -4,5 +4,5 @@
 #include "../parser/command.h"
 
 int executeCommand(const Command& command);
-
+int executePipeline(const Pipeline& pipeline);
 #endif
