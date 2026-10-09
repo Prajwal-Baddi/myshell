@@ -5,6 +5,6 @@
 #include <vector>
 #include "command.h"
 
-Command parse(const std::vector<std::string>& tokens);
+Pipeline parse(const std::vector<std::string>& tokens);
 
 #endif

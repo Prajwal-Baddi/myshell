@@ -11,4 +11,9 @@ struct Command {
     bool append = false;
     std::string inputFile;
 };
+
+struct Pipeline {
+    std::vector<Command> commands;
+};
+
 #endif

@@ -6,7 +6,13 @@ std::vector<std::string> tokenize(const std::string& input) {
     std::string token;
 
     for (char c : input) {
-        if (isspace(c)) {
+        if (c == '|') {
+            if (!token.empty()) {
+                tokens.push_back(token);
+                token.clear();
+            }
+            tokens.push_back("|");
+        } else if (isspace(static_cast<unsigned char>(c))) {
             if (!token.empty()) {
                 tokens.push_back(token);
                 token.clear();
