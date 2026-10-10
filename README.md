@@ -20,7 +20,7 @@ There are no external dependencies: just a C++17 compiler, `make`, and a POSIX s
 | Feature | Notes |
 |---|---|
 | Interactive REPL | Prompt `myshell> `, exits on `exit` or EOF (Ctrl-D) |
-| Tokenization | Whitespace-delimited lexing |
+| Tokenization | Whitespace-delimited lexing with `'...'` / `"..."` quote grouping |
 | Command parsing | Tokens → `Command` struct, with parse-error reporting |
 | Builtin commands | `cd` (with `$HOME` fallback), `pwd`, `exit` — run without forking |
 | External commands | `fork()` + `execvp()` with `PATH` lookup, `waitpid()` in parent |
@@ -32,7 +32,7 @@ There are no external dependencies: just a C++17 compiler, `make`, and a POSIX s
 ### Not yet supported
 
 - Pipes (`|`) and command sequences (`;`, `&&`, `||`)
-- Quoting and escaping (`'`, `"`, `\`) — tokens are split purely on whitespace
+- Escaping (`\`) and unbalanced-quote handling — single/double quotes group words, but there is no backslash escape
 - Variable expansion (`$VAR`, `~`) and the `$?` status variable
 - Signals / job control (Ctrl-C, Ctrl-Z, `&`, `fg`, `bg`, `jobs`) — **Ctrl-C currently terminates the shell itself**
 - History, line editing (arrow keys), and tab completion
@@ -89,7 +89,7 @@ stdin
 main.cpp  ── REPL: read line, print prompt
   │
   ▼
-tokenize()  ── split input on whitespace  →  vector<string>
+tokenize()  ── split on whitespace (quotes group words)  →  vector<string>
   │
   ▼
 parse()     ── tokens → Command{program, arguments,
@@ -171,12 +171,16 @@ Expected output:
 [ls]
 [-l]
 [/home]
+---
+[echo]
+[Hello world]
+[single quoted]
 ```
 
 ## Roadmap
 
 - [ ] Pipes (`ls | grep foo`)
-- [ ] Quotes and escapes
+- [x] Quotes (`'...'`, `"..."`); escapes (`\`) still pending
 - [ ] `;`, `&&`, `||` sequencing
 - [ ] `$VAR` and `~` expansion; `$?` status variable
 - [ ] Signal handling (Ctrl-C ignored in shell, delivered to foreground child)
