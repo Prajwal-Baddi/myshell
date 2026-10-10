@@ -3,10 +3,13 @@
 
 int main() {
     std::string input = "ls -l /home";
+    std::string quoted = "echo \"Hello world\" 'single quoted'";
 
-    std::vector<std::string> tokens = tokenize(input);
-
-    for (const auto& token : tokens) {
+    for (const auto& token : tokenize(input)) {
+        std::cout << "[" << token << "]\n";
+    }
+    std::cout << "---\n";
+    for (const auto& token : tokenize(quoted)) {
         std::cout << "[" << token << "]\n";
     }
 }

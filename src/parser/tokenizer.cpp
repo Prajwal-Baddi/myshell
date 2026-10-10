@@ -5,26 +5,30 @@ std::vector<std::string> tokenize(const std::string& input) {
     std::vector<std::string> tokens;
     std::string token;
 
-    for (char c : input) {
-        if (c == '|') {
-            if (!token.empty()) {
-                tokens.push_back(token);
-                token.clear();
+    auto flush = [&]() {
+        if (!token.empty()) {
+            tokens.push_back(token);
+            token.clear();
+        }
+    };
+
+    for (size_t i = 0; i < input.size(); ++i) {
+        char c = input[i];
+        if (c == '"' || c == '\'') {
+            for (++i; i < input.size() && input[i] != c; ++i) {
+                token += input[i];
             }
+        } else if (c == '|') {
+            flush();
             tokens.push_back("|");
         } else if (isspace(static_cast<unsigned char>(c))) {
-            if (!token.empty()) {
-                tokens.push_back(token);
-                token.clear();
-            }
+            flush();
         } else {
             token += c;
         }
     }
 
-    if (!token.empty()) {
-        tokens.push_back(token);
-    }
+    flush();
 
     return tokens;
 }
