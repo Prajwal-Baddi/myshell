@@ -14,6 +14,7 @@ struct Command {
 
 struct Pipeline {
     std::vector<Command> commands;
+    bool background = false;
 };
 
 #endif
