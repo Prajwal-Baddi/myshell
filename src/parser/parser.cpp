@@ -46,32 +46,64 @@ Command parseCommand(const std::vector<std::string>& tokens) {
 
 } // namespace
 
-Pipeline parse(const std::vector<std::string>& tokens) {
+Pipeline parse(const std::vector<std::string> &tokens)
+{
     Pipeline pipeline;
 
-    if (tokens.empty()) {
+    if (tokens.empty())
+    {
         return pipeline;
     }
 
     std::vector<std::string> commandTokens;
 
-    for (const auto& token : tokens) {
-        if (token == "|") {
-            if (commandTokens.empty()) {
-                throw std::runtime_error("expected a command before |");
+    // A background operator is valid only at the end.
+    if (tokens.back() == "&")
+    {
+        pipeline.background = true;
+    }
+
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+        const auto &token = tokens[i];
+
+        if (token == "&")
+        {
+            if (i != tokens.size() - 1)
+            {
+                throw std::runtime_error(
+                    "'&' must appear at the end of the command");
             }
 
-            pipeline.commands.push_back(parseCommand(commandTokens));
+            continue;
+        }
+
+        if (token == "|")
+        {
+            if (commandTokens.empty())
+            {
+                throw std::runtime_error(
+                    "expected a command before |");
+            }
+
+            pipeline.commands.push_back(
+                parseCommand(commandTokens));
+
             commandTokens.clear();
-        } else {
+        }
+        else
+        {
             commandTokens.push_back(token);
         }
     }
 
-    if (commandTokens.empty()) {
-        throw std::runtime_error("expected a command after |");
+    if (commandTokens.empty())
+    {
+        throw std::runtime_error(
+            "expected a command after |");
     }
 
     pipeline.commands.push_back(parseCommand(commandTokens));
+
     return pipeline;
 }
