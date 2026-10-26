@@ -8,6 +8,89 @@
 #include <fcntl.h>  
 #include <array>
 #include <string>
+#include <iostream>
+#include <csignal>
+// #include <iostream>
+#include <sys/types.h>
+
+namespace {
+    constexpr int MAX_BACKGROUND_JOBS = 1024;
+
+    pid_t backgroundPids[MAX_BACKGROUND_JOBS] = {};
+    volatile sig_atomic_t backgroundCount = 0;
+
+    // Remove one PID from the tracked background-process list.
+    void removeBackgroundPid(int index) {
+        int count = backgroundCount;
+
+        for (int i = index; i < count - 1; ++i) {
+            backgroundPids[i] = backgroundPids[i + 1];
+        }
+
+        backgroundPids[count - 1] = 0;
+        backgroundCount = count - 1;
+    }
+
+    // Reap only children registered as background processes.
+    void reapBackgroundChildren(int) {
+        int i = 0;
+
+        while (i < backgroundCount) {
+            pid_t pid = backgroundPids[i];
+            int status = 0;
+
+            if (pid <= 0) {
+                ++i;
+                continue;
+            }
+
+            pid_t result = waitpid(pid, &status, WNOHANG);
+
+            if (result == pid ||
+                (result == -1 && errno == ECHILD)) {
+                removeBackgroundPid(i);
+            } else {
+                ++i;
+            }
+        }
+    }
+
+    void installChildHandler() {
+        struct sigaction action {};
+        action.sa_handler = reapBackgroundChildren;
+        sigemptyset(&action.sa_mask);
+        action.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+
+        if (sigaction(SIGCHLD, &action, nullptr) == -1) {
+            perror("sigaction");
+        }
+    }
+
+    // Register a background child while SIGCHLD is blocked.
+    bool registerBackgroundPid(pid_t pid) {
+        sigset_t set;
+        sigset_t oldSet;
+
+        sigemptyset(&set);
+        sigaddset(&set, SIGCHLD);
+        sigprocmask(SIG_BLOCK, &set, &oldSet);
+
+        bool registered = false;
+
+        if (backgroundCount < MAX_BACKGROUND_JOBS) {
+            backgroundPids[backgroundCount] = pid;
+            backgroundCount++;
+            registered = true;
+        }
+
+        // Check for children that exited before they were registered.
+        reapBackgroundChildren(0);
+
+        sigprocmask(SIG_SETMASK, &oldSet, nullptr);
+
+        return registered;
+    }
+}
 
 int executeCommand(const Command& command) {
     if (command.program.empty()) {
@@ -120,6 +203,8 @@ int executePipeline(const Pipeline& pipeline) {
     if (commandCount == 0) {
         return 0;
     }
+
+    installChildHandler();
 
     // N commands need N - 1 pipes.
     std::vector<std::array<int, 2>> pipes(commandCount - 1);
@@ -237,6 +322,30 @@ int executePipeline(const Pipeline& pipeline) {
         close(pipeFds[0]);
         close(pipeFds[1]);
     }
+
+    // Background jobs return control to the shell immediately.
+    if (pipeline.background) {
+    bool allRegistered = true;
+
+    for (pid_t pid : pids) {
+        if (!registerBackgroundPid(pid)) {
+            allRegistered = false;
+            break;
+        }
+    }
+
+    if (!allRegistered) {
+        std::cerr
+            << "myshell: background job tracking limit reached\n";
+    }
+
+    if (!pids.empty()) {
+        std::cout << "[background] PID: "
+                  << pids.front() << '\n';
+    }
+
+    return 0;
+}
 
     // Wait for every child. Return the last command's status.
     int lastStatus = 1;
