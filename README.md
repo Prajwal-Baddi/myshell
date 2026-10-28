@@ -123,7 +123,6 @@ myshell/
         ├── executer.h
         └── executer.cpp         # process management, piping, and job control
     └── tests/
-        └── integration/         # integration test suite
 ```
 
 ## Key learnings
