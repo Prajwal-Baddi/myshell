@@ -35,6 +35,19 @@ It uses GNU Readline for an interactive experience with command history and line
 | Job Control | Process group management, `fg`/`bg` transitions, and background child reaping |
 | Exit-status conventions | `127` command not found, `126` exec failed, `128+N` killed by signal N |
 
+## Tech Stack
+
+- **Core Language:** C++17 (`std::string`, `std::vector`, `std::unordered_map`, `std::unique_ptr`)
+- **System APIs & POSIX Standards:**
+  - **Process Management:** `fork()`, `execvp()`, `waitpid()`, `kill()`
+  - **File Descriptors & I/O Redirection:** `pipe()`, `dup2()`, `open()`, `close()`
+  - **Job Control & Terminal Control:** `setpgid()`, `tcsetpgrp()`, `signal()` / POSIX signal handling (`SIGINT`, `SIGTSTP`, `SIGCHLD`)
+  - **System Info & Directory Navigation:** `getcwd()`, `chdir()`, `getenv()`, `setenv()`
+- **Libraries:** GNU Readline (`libreadline`, `libhistory`) for interactive command editing, completion, and history navigation
+- **Build System & Toolchain:** GNU Make, GCC / `g++` (`-std=c++17 -Wall -Wextra -g`)
+- **Testing & Scripting:** Bash (`test_shell.sh` integration test suite)
+- **Target Platform:** POSIX-compliant operating systems (Linux, macOS, WSL)
+
 ## Requirements
 
 - A POSIX operating system (Linux, macOS, or WSL)
